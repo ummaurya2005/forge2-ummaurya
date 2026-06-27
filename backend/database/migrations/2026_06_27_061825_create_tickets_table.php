@@ -17,12 +17,19 @@ return new class extends Migration
 
             /*
             |--------------------------------------------------------------------------
-            | Organization (Multi-Tenant)
+            | Ticket Number
+            |--------------------------------------------------------------------------
+            */
+            $table->string('ticket_number')->unique();
+
+            /*
+            |--------------------------------------------------------------------------
+            | Organization
             |--------------------------------------------------------------------------
             */
             $table->foreignId('organization_id')
-                  ->constrained()
-                  ->cascadeOnDelete();
+                ->constrained()
+                ->cascadeOnDelete();
 
             /*
             |--------------------------------------------------------------------------
@@ -30,20 +37,21 @@ return new class extends Migration
             |--------------------------------------------------------------------------
             */
             $table->foreignId('customer_id')
-                  ->constrained('users')
-                  ->cascadeOnDelete();
+                ->constrained('users')
+                ->cascadeOnDelete();
 
             $table->foreignId('assigned_to')
-                  ->nullable()
-                  ->constrained('users')
-                  ->nullOnDelete();
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
 
             /*
             |--------------------------------------------------------------------------
-            | Ticket Details
+            | Ticket Information
             |--------------------------------------------------------------------------
             */
             $table->string('title');
+
             $table->longText('description');
 
             $table->string('category')->default('General');
@@ -52,40 +60,41 @@ return new class extends Migration
             |--------------------------------------------------------------------------
             | Priority
             |--------------------------------------------------------------------------
-            | Low
-            | Medium
-            | High
-            | Critical
-            |--------------------------------------------------------------------------
             */
-            $table->string('priority')->default('Medium');
+            $table->enum('priority', [
+                'Low',
+                'Medium',
+                'High',
+                'Critical'
+            ])->default('Medium');
 
             /*
             |--------------------------------------------------------------------------
             | Status
             |--------------------------------------------------------------------------
-            | Open
-            | In Progress
-            | Pending
-            | Resolved
-            | Closed
-            |--------------------------------------------------------------------------
             */
-            $table->string('status')->default('Open');
+            $table->enum('status', [
+                'Open',
+                'In Progress',
+                'Pending',
+                'Resolved',
+                'Closed'
+            ])->default('Open');
 
             /*
             |--------------------------------------------------------------------------
-            | Attachments
+            | Attachment
             |--------------------------------------------------------------------------
             */
             $table->string('attachment')->nullable();
 
             /*
             |--------------------------------------------------------------------------
-            | SLA / Timeline
+            | SLA
             |--------------------------------------------------------------------------
             */
             $table->timestamp('due_date')->nullable();
+
             $table->timestamp('closed_at')->nullable();
 
             $table->timestamps();

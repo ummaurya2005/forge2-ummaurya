@@ -3,63 +3,80 @@
 namespace App\Http\Controllers;
 
 use App\Models\Organization;
+use Illuminate\Http\JsonResponse;
+use App\Http\Resources\OrganizationResource;
+use App\Http\Requests\StoreOrganizationRequest;
+use App\Http\Requests\UpdateOrganizationRequest;
 use Illuminate\Http\Request;
 
 class OrganizationController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display all organizations.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $search = $request->search;
+
+        $organizations = Organization::when($search, function ($query) use ($search) {
+                $query->where('name', 'LIKE', "%{$search}%")
+                      ->orWhere('email', 'LIKE', "%{$search}%");
+            })
+            ->latest()
+            ->paginate(10);
+
+        return OrganizationResource::collection($organizations);
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Store a newly created organization.
      */
-    public function create()
+    public function store(StoreOrganizationRequest $request): JsonResponse
     {
-        //
+        $organization = Organization::create($request->validated());
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Organization created successfully.',
+            'data' => new OrganizationResource($organization)
+        ], 201);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Display a specific organization.
      */
-    public function store(Request $request)
+    public function show(Organization $organization): JsonResponse
     {
-        //
+        return response()->json([
+            'success' => true,
+            'data' => new OrganizationResource($organization)
+        ]);
     }
 
     /**
-     * Display the specified resource.
+     * Update an organization.
      */
-    public function show(Organization $organization)
+    public function update(UpdateOrganizationRequest $request, Organization $organization): JsonResponse
     {
-        //
+        $organization->update($request->validated());
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Organization updated successfully.',
+            'data' => new OrganizationResource($organization)
+        ]);
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Delete an organization.
      */
-    public function edit(Organization $organization)
+    public function destroy(Organization $organization): JsonResponse
     {
-        //
-    }
+        $organization->delete();
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Organization $organization)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Organization $organization)
-    {
-        //
+        return response()->json([
+            'success' => true,
+            'message' => 'Organization deleted successfully.'
+        ]);
     }
 }
